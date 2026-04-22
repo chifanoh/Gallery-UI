@@ -55,6 +55,32 @@
     </div>
     
     <div class="settings-card">
+      <h2 class="section-title">依赖检查</h2>
+      <div class="about-content">
+        <div class="about-item">
+          <span class="about-label">gallery-dl.exe</span>
+          <el-tag v-if="galleryInstalled" type="success">已安装</el-tag>
+          <el-tag v-else type="danger">未安装</el-tag>
+        </div>
+        <div v-if="galleryVersion" class="about-item">
+          <span class="about-label">版本</span>
+          <span class="about-value">{{ galleryVersion }}</span>
+        </div>
+        <div v-if="galleryInstalled && galleryBundled" class="install-hint">
+          <p>使用内置的 gallery-dl 可执行文件</p>
+        </div>
+        <div v-if="!galleryInstalled" class="install-hint">
+          <p>gallery-dl 未找到，请下载 Windows 可执行文件并放置到以下位置之一：</p>
+          <ul>
+            <li>应用目录的 bin 文件夹中</li>
+            <li>添加到系统 PATH 环境变量</li>
+          </ul>
+          <p>下载地址：<a href="https://github.com/mikf/gallery-dl/releases" target="_blank">GitHub Releases</a></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-card">
       <h2 class="section-title">关于</h2>
       <div class="about-content">
         <div class="about-item">
@@ -63,7 +89,7 @@
         </div>
         <div class="about-item">
           <span class="about-label">基于</span>
-          <span class="about-value">Electron + Vue3</span>
+          <span class="about-value">Electron + Vue3 + gallery-dl</span>
         </div>
       </div>
     </div>
@@ -76,6 +102,7 @@ import { Folder, Sunny, Moon, Monitor } from '@element-plus/icons-vue'
 import { useSettingsStore } from '../stores/settings'
 import { useThemeStore } from '../stores/theme'
 import { storeToRefs } from 'pinia'
+import { ElMessage } from 'element-plus'
 
 const settingsStore = useSettingsStore()
 const themeStore = useThemeStore()
@@ -83,21 +110,41 @@ const { downloadPath } = storeToRefs(settingsStore)
 const { isDark } = storeToRefs(themeStore)
 
 const themeMode = ref('light')
+const galleryInstalled = ref(false)
+const galleryVersion = ref('')
+const galleryBundled = ref(false)
 
-onMounted(() => {
+onMounted(async () => {
   // 根据当前主题设置初始值
   if (isDark.value) {
     themeMode.value = 'dark'
   } else {
     themeMode.value = 'light'
   }
+  
+  // 检查 gallery-dl
+  try {
+    const result = await window.electronAPI.checkGalleryDl()
+    galleryInstalled.value = result.installed
+    galleryBundled.value = result.bundled || false
+    if (result.version) {
+      galleryVersion.value = result.version
+    }
+  } catch (error) {
+    console.error('检查 gallery-dl 失败:', error)
+  }
 })
 
-const selectFolder = () => {
-  // 由于是在 Electron 中，这里使用模拟路径
-  // 实际项目中可以通过 IPC 调用主进程选择文件夹
-  const mockPath = 'C:\\Users\\Downloads\\Comics'
-  settingsStore.setDownloadPath(mockPath)
+const selectFolder = async () => {
+  try {
+    const path = await window.electronAPI.selectFolder()
+    if (path) {
+      settingsStore.setDownloadPath(path)
+      ElMessage.success('下载路径已更新')
+    }
+  } catch (error) {
+    ElMessage.error('选择文件夹失败')
+  }
 }
 
 const handleThemeChange = (val: string) => {
@@ -186,6 +233,7 @@ const handleThemeChange = (val: string) => {
 .about-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 8px 0;
 }
 
@@ -198,5 +246,27 @@ const handleThemeChange = (val: string) => {
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
+}
+
+.install-hint {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.install-hint p {
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.install-hint code {
+  display: block;
+  padding: 8px 12px;
+  background-color: var(--bg-secondary);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
 }
 </style>

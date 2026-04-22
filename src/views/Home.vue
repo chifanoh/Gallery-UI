@@ -21,6 +21,7 @@
           size="large"
           class="download-btn"
           :loading="isDownloading"
+          :disabled="!galleryInstalled"
           @click="handleDownload"
         >
           <el-icon class="btn-icon"><Download /></el-icon>
@@ -37,23 +38,44 @@
         />
       </div>
       
-      <div class="tips-section">
-        <el-icon size="14"><InfoFilled /></el-icon>
-        <span>请合理使用下载功能，避免频繁请求对服务器造成压力</span>
+      <div v-if="checked" class="tips-section" :class="{ error: !galleryInstalled }">
+        <el-icon size="14"><WarningFilled v-if="!galleryInstalled" /><InfoFilled v-else /></el-icon>
+        <span>{{ !galleryInstalled ? (galleryError || 'gallery-dl 未找到，请在设置中查看安装说明') : '请合理使用下载功能，避免频繁请求对服务器造成压力' }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Link, Download, InfoFilled } from '@element-plus/icons-vue'
+import { ref, onMounted } from 'vue'
+import { Link, Download, InfoFilled, WarningFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useSettingsStore } from '../stores/settings'
 
 const url = ref('')
 const isDownloading = ref(false)
 const downloadStatus = ref('')
 const statusType = ref<'success' | 'warning' | 'info' | 'error'>('info')
+const galleryInstalled = ref(false)
+const galleryError = ref('')
+const checked = ref(false)
+
+const settingsStore = useSettingsStore()
+
+// 检查 gallery-dl 是否安装
+const checkGallery = async () => {
+  try {
+    const result = await window.electronAPI.checkGalleryDl()
+    galleryInstalled.value = result.installed
+    if (result.error) {
+      galleryError.value = result.error
+    }
+    checked.value = true
+  } catch (error) {
+    galleryInstalled.value = false
+    checked.value = true
+  }
+}
 
 const handleDownload = async () => {
   if (!url.value.trim()) {
@@ -62,21 +84,40 @@ const handleDownload = async () => {
   }
   
   isDownloading.value = true
-  downloadStatus.value = '正在准备下载...'
+  downloadStatus.value = '正在下载中，请稍候...'
   statusType.value = 'info'
   
-  // 模拟下载过程
-  setTimeout(() => {
-    isDownloading.value = false
-    downloadStatus.value = '下载任务已创建！'
-    statusType.value = 'success'
-    ElMessage.success('下载任务已创建')
+  try {
+    const result = await window.electronAPI.downloadGallery(
+      url.value.trim(),
+      settingsStore.downloadPath
+    )
     
+    if (result.success) {
+      downloadStatus.value = '下载完成！'
+      statusType.value = 'success'
+      ElMessage.success('下载完成')
+      url.value = ''
+    } else {
+      downloadStatus.value = result.message || '下载失败'
+      statusType.value = 'error'
+      ElMessage.error(result.message || '下载失败')
+    }
+  } catch (error) {
+    downloadStatus.value = '下载出错：' + (error as Error).message
+    statusType.value = 'error'
+    ElMessage.error('下载出错')
+  } finally {
+    isDownloading.value = false
     setTimeout(() => {
       downloadStatus.value = ''
-    }, 3000)
-  }, 2000)
+    }, 5000)
+  }
 }
+
+onMounted(() => {
+  checkGallery()
+})
 </script>
 
 <style scoped>
@@ -98,7 +139,7 @@ const handleDownload = async () => {
   font-size: 36px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 12px;
+  margin-bottom: 40px;
 }
 
 .input-section {
@@ -132,7 +173,7 @@ const handleDownload = async () => {
 }
 
 .status-section {
-  margin-bottom: 40px;
+  margin-bottom: 16px;
 }
 
 .tips-section {
@@ -149,5 +190,14 @@ const handleDownload = async () => {
 
 .tips-section .el-icon {
   color: var(--text-secondary);
+}
+
+.tips-section.error {
+  color: #f56c6c;
+  opacity: 1;
+}
+
+.tips-section.error .el-icon {
+  color: #f56c6c;
 }
 </style>

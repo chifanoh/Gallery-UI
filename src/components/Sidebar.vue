@@ -1,7 +1,8 @@
 <template>
   <aside class="sidebar">
     <div class="logo">
-      <el-icon size="28" color="var(--accent-color)"><Collection /></el-icon>
+      <span class="logo-text">i Kan</span>
+      <span class="logo-subtext">comic</span>
     </div>
     
     <nav class="nav-menu">
@@ -38,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { Collection, Download, Setting, Document, Sunny, Moon } from '@element-plus/icons-vue'
+import { Download, Setting, Document, Sunny, Moon } from '@element-plus/icons-vue'
 import { useThemeStore } from '../stores/theme'
 import { storeToRefs } from 'pinia'
 
@@ -61,10 +62,28 @@ const { toggleTheme } = themeStore
 
 .logo {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding-bottom: 16px;
   width: 100%;
+  gap: 2px;
+}
+
+.logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.logo-subtext {
+  font-size: 10px;
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: 2px;
+  text-transform: lowercase;
+  opacity: 0.7;
 }
 
 .nav-menu {

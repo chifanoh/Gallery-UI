@@ -57,17 +57,15 @@
           <template #title>
             <div class="collapse-title">
               <el-icon class="title-icon"><Link /></el-icon>
-              <span>支持的链接格式</span>
+              <span>示例站点（包括但不限于）</span>
             </div>
           </template>
           <div class="collapse-content">
-            <p>目前支持以下漫画网站的链接：</p>
+            <p>支持以下漫画网站：</p>
             <ul>
-              <li>示例网站 1</li>
-              <li>示例网站 2</li>
-              <li>示例网站 3</li>
+              <li>nhentai.net</li>
+              <li>wnacg.com</li>
             </ul>
-            <p class="note">注意：请确保您拥有下载内容的合法权利。</p>
           </div>
         </el-collapse-item>
         
@@ -81,7 +79,7 @@
           <div class="collapse-content">
             <div class="faq-item">
               <h4>Q: 下载失败怎么办？</h4>
-              <p>A: 请检查网络连接，确认链接有效，或尝试更换下载路径。</p>
+              <p>A: 请检查网络连接，确认链接有效，或尝试更换下载路径（频繁请求可能会被对应网站封禁）。</p>
             </div>
             <div class="faq-item">
               <h4>Q: 支持哪些格式的漫画？</h4>
@@ -152,15 +150,6 @@ const activeNames = ref(['1'])
 
 .collapse-content li {
   margin: 8px 0;
-}
-
-.note {
-  margin-top: 16px;
-  padding: 12px;
-  background-color: var(--bg-primary);
-  border-radius: 8px;
-  border-left: 4px solid var(--accent-color);
-  font-size: 14px;
 }
 
 .faq-item {
