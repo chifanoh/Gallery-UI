@@ -3,23 +3,36 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
-    "type-check": "vue-tsc --build"
+    "type-check": "vue-tsc --build",
+    "electron:build-main": "node scripts/build-electron.js",
+    "electron:dev": "npm run build && npm run electron:build-main && electron .",
+    "electron:serve": "npm run build && npm run electron:build-main && electron .",
+    "electron:build": "npm run build && npm run electron:build-main && electron-builder"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "element-plus": "^2.13.7",
     "pinia": "^3.0.4",
-    "vue": "^3.5.32"
+    "vue": "^3.5.32",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.4",
     "@tsconfig/node24": "^24.0.4",
     "@types/node": "^24.12.2",
     "@vitejs/plugin-vue": "^6.0.6",
     "@vue/tsconfig": "^0.9.1",
+    "electron": "^34.5.8",
+    "electron-builder": "^26.8.1",
+    "esbuild": "^0.25.3",
     "npm-run-all2": "^8.0.4",
+    "tailwindcss": "^4.1.4",
     "typescript": "~6.0.0",
     "vite": "^8.0.8",
     "vite-plugin-vue-devtools": "^8.1.1",
@@ -27,5 +40,19 @@
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
+  },
+  "build": {
+    "appId": "com.gallery.ui",
+    "productName": "Gallery UI",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    }
   }
 }

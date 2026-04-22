@@ -1,11 +1,38 @@
-<script setup lang="ts"></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div class="app-container">
+    <Sidebar />
+    <main class="main-content">
+      <router-view />
+    </main>
+  </div>
 </template>
 
-<style scoped></style>
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import Sidebar from './components/Sidebar.vue'
+import { useThemeStore } from './stores/theme'
+import { useSettingsStore } from './stores/settings'
+
+const themeStore = useThemeStore()
+const settingsStore = useSettingsStore()
+
+onMounted(() => {
+  themeStore.loadTheme()
+  settingsStore.loadSettings()
+})
+</script>
+
+<style scoped>
+.app-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-primary);
+}
+
+.main-content {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+}
+</style>
