@@ -5,13 +5,13 @@ import fs from 'fs'
 
 // 获取 gallery-dl 可执行文件路径
 const getGalleryDlPath = (): string => {
-  // 首先检查应用目录下是否有打包的 gallery-dl.exe
-  const bundledPath = path.join(process.resourcesPath, 'gallery-dl.exe')
-  if (fs.existsSync(bundledPath)) {
-    return bundledPath
+  // 打包后：检查 extraResources 中的 gallery-dl.exe
+  const extraResourcePath = path.join(process.resourcesPath, 'gallery-dl.exe')
+  if (fs.existsSync(extraResourcePath)) {
+    return extraResourcePath
   }
   
-  // 开发环境下检查项目根目录
+  // 开发环境：检查项目根目录的 bin 文件夹
   const devPath = path.join(app.getAppPath(), 'bin', 'gallery-dl.exe')
   if (fs.existsSync(devPath)) {
     return devPath
@@ -52,14 +52,14 @@ const createWindow = () => {
 ipcMain.handle('check-gallery-dl', async () => {
   return new Promise((resolve) => {
     const galleryDlPath = getGalleryDlPath()
-    const process = spawn(galleryDlPath, ['--version'])
+    const childProcess = spawn(galleryDlPath, ['--version'])
     let output = ''
     
-    process.stdout.on('data', (data) => {
+    childProcess.stdout.on('data', (data) => {
       output += data.toString()
     })
     
-    process.on('close', (code) => {
+    childProcess.on('close', (code) => {
       if (code === 0) {
         resolve({ 
           installed: true, 
@@ -74,7 +74,7 @@ ipcMain.handle('check-gallery-dl', async () => {
       }
     })
     
-    process.on('error', () => {
+    childProcess.on('error', () => {
       resolve({ 
         installed: false, 
         error: 'gallery-dl 未找到，请确保 gallery-dl.exe 在应用目录的 bin 文件夹中，或已添加到系统 PATH'
@@ -90,8 +90,8 @@ ipcMain.handle('download-gallery', async (event, url: string, downloadPath: stri
     
     // 处理相对路径，转换为绝对路径
     let targetPath = downloadPath
-    if (targetPath.startsWith('./') || targetPath.startsWith('.\\')) {
-      targetPath = path.join(app.getPath('downloads'), 'gallery-dl')
+    if (targetPath === 'downloads' || targetPath.startsWith('./') || targetPath.startsWith('.\\')) {
+      targetPath = path.join(app.getPath('downloads'), 'iKan Downloads')
     }
     
     // 确保目录存在
@@ -100,20 +100,20 @@ ipcMain.handle('download-gallery', async (event, url: string, downloadPath: stri
     }
     
     const args = ['-d', targetPath, url]
-    const process = spawn(galleryDlPath, args)
+    const childProcess = spawn(galleryDlPath, args)
     
     let output = ''
     let errorOutput = ''
     
-    process.stdout.on('data', (data) => {
+    childProcess.stdout.on('data', (data) => {
       output += data.toString()
     })
     
-    process.stderr.on('data', (data) => {
+    childProcess.stderr.on('data', (data) => {
       errorOutput += data.toString()
     })
     
-    process.on('close', (code) => {
+    childProcess.on('close', (code) => {
       if (code === 0) {
         resolve({ success: true, message: '下载完成', output })
       } else {
@@ -121,7 +121,7 @@ ipcMain.handle('download-gallery', async (event, url: string, downloadPath: stri
       }
     })
     
-    process.on('error', (error) => {
+    childProcess.on('error', (error) => {
       resolve({ success: false, message: error.message })
     })
   })
