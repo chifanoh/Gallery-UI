@@ -1,23 +1,23 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const path = require('path')
-const { spawn } = require('child_process')
-const fs = require('fs')
 
-// 获取 gallery-dl 可执行文件路径
+// 延迟加载模块
+let spawn
+let fs
+
 const getGalleryDlPath = () => {
-  // 打包后：检查 extraResources 中的 gallery-dl.exe
+  if (!fs) fs = require('fs')
+  
   const extraResourcePath = path.join(process.resourcesPath, 'gallery-dl.exe')
   if (fs.existsSync(extraResourcePath)) {
     return extraResourcePath
   }
 
-  // 开发环境：检查项目根目录的 bin 文件夹
   const devPath = path.join(app.getAppPath(), 'bin', 'gallery-dl.exe')
   if (fs.existsSync(devPath)) {
     return devPath
   }
 
-  // 否则使用系统 PATH 中的 gallery-dl
   return 'gallery-dl'
 }
 
@@ -28,20 +28,19 @@ const createWindow = () => {
     minWidth: 900,
     minHeight: 600,
     resizable: true,
-    frame: false, // 无边框窗口
+    frame: false,
     titleBarStyle: 'hidden',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false
     },
-    show: false
+    show: false,
+    backgroundColor: '#1a1a1a'
   })
 
-  // 去掉默认菜单栏
   mainWindow.setMenu(null)
 
-  // 加载应用
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
   } else {
@@ -53,7 +52,6 @@ const createWindow = () => {
   })
 }
 
-// 窗口控制
 ipcMain.handle('window-minimize', () => {
   const win = BrowserWindow.getFocusedWindow()
   if (win) win.minimize()
@@ -75,14 +73,14 @@ ipcMain.handle('window-close', () => {
   if (win) win.close()
 })
 
-// 检查窗口是否最大化
 ipcMain.handle('window-is-maximized', () => {
   const win = BrowserWindow.getFocusedWindow()
   return win ? win.isMaximized() : false
 })
 
-// 检查 gallery-dl 是否可用
 ipcMain.handle('check-gallery-dl', async () => {
+  if (!spawn) spawn = require('child_process').spawn
+  
   return new Promise((resolve) => {
     const galleryDlPath = getGalleryDlPath()
     const childProcess = spawn(galleryDlPath, ['--version'])
@@ -102,7 +100,7 @@ ipcMain.handle('check-gallery-dl', async () => {
       } else {
         resolve({
           installed: false,
-          error: 'gallery-dl 未找到，请确保 gallery-dl.exe 在应用目录的 bin 文件夹中，或已添加到系统 PATH'
+          error: 'gallery-dl 未找到'
         })
       }
     })
@@ -110,31 +108,30 @@ ipcMain.handle('check-gallery-dl', async () => {
     childProcess.on('error', () => {
       resolve({
         installed: false,
-        error: 'gallery-dl 未找到，请确保 gallery-dl.exe 在应用目录的 bin 文件夹中，或已添加到系统 PATH'
+        error: 'gallery-dl 未找到'
       })
     })
   })
 })
 
-// 执行下载
 ipcMain.handle('download-gallery', async (event, url, downloadPath) => {
+  if (!spawn) spawn = require('child_process').spawn
+  if (!fs) fs = require('fs')
+  
   return new Promise((resolve) => {
     const galleryDlPath = getGalleryDlPath()
-
-    // 处理相对路径，转换为绝对路径
     let targetPath = downloadPath
+    
     if (targetPath === 'downloads' || targetPath.startsWith('./') || targetPath.startsWith('.\\')) {
       targetPath = path.join(app.getPath('downloads'), 'iKan Downloads')
     }
 
-    // 确保目录存在
     if (!fs.existsSync(targetPath)) {
       fs.mkdirSync(targetPath, { recursive: true })
     }
 
     const args = ['-d', targetPath, url]
     const childProcess = spawn(galleryDlPath, args)
-
     let output = ''
     let errorOutput = ''
 
@@ -160,7 +157,6 @@ ipcMain.handle('download-gallery', async (event, url, downloadPath) => {
   })
 })
 
-// 选择文件夹
 ipcMain.handle('select-folder', async () => {
   const result = await dialog.showOpenDialog({
     properties: ['openDirectory']
@@ -170,11 +166,6 @@ ipcMain.handle('select-folder', async () => {
     return result.filePaths[0]
   }
   return null
-})
-
-// 打开外部链接
-ipcMain.handle('open-external', async (event, url) => {
-  await shell.openExternal(url)
 })
 
 app.whenReady().then(() => {

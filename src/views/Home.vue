@@ -41,7 +41,7 @@
         
         <div v-if="checked" class="tips-section" :class="{ error: !galleryInstalled }">
           <el-icon size="14"><WarningFilled v-if="!galleryInstalled" /><InfoFilled v-else /></el-icon>
-          <span>{{ !galleryInstalled ? (galleryError || 'gallery-dl 未找到，请在设置中查看安装说明') : '请合理使用下载功能，避免频繁请求对服务器造成压力' }}</span>
+          <span>{{ !galleryInstalled ? (galleryError || 'gallery-dl 未找到，请在设置或手册中查看安装说明') : '请合理使用下载功能，避免频繁请求对服务器造成压力' }}</span>
         </div>
       </div>
     </div>

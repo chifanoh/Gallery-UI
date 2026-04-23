@@ -7,9 +7,16 @@ files:
   - dist/**/*
   - src/background.cjs
   - src/preload.cjs
+  - '!**/*.{md,txt}'
+  - '!**/LICENSE*'
 extraResources:
   - from: bin/gallery-dl.exe
     to: gallery-dl.exe
+asar: true
+asarUnpack:
+  - src/background.cjs
+  - src/preload.cjs
+electronLanguages: ['zh-CN', 'en-US']
 win:
   target:
     - target: portable
@@ -20,3 +27,4 @@ portable:
   artifactName: ${productName}-${version}-portable.exe
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
+compression: maximum

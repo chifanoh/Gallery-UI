@@ -69,6 +69,27 @@
           </ul>
         </div>
       </el-collapse-item>
+
+      <el-collapse-item name="6">
+        <template #title>
+          <div class="collapse-title">
+            <el-icon class="title-icon"><InfoFilled /></el-icon>
+            <span>依赖配置说明</span>
+          </div>
+        </template>
+        <div class="collapse-content">
+          <div class="dependency-info">
+            <p><strong>便携版用户：</strong>无需额外配置，gallery-dl.exe 已内置。</p>
+            <p style="margin-top: 12px;"><strong>安装版用户：</strong>若启动后提示缺少 gallery-dl，请按以下步骤操作：</p>
+            <ol style="margin-top: 8px;">
+              <li>访问 <a class="external-link" @click="openLink('https://github.com/mikf/gallery-dl/releases')">GitHub Releases</a> 下载最新版 gallery-dl.exe</li>
+              <li>将下载的 gallery-dl.exe 放置于应用程序安装目录下的 <code>resources</code> 文件夹中</li>
+              <li>重启应用程序即可正常使用</li>
+            </ol>
+            <p style="margin-top: 12px; color: var(--text-secondary);">提示：您也可以通过系统环境变量配置 gallery-dl 路径，具体请参考官方文档。</p>
+          </div>
+        </div>
+      </el-collapse-item>
       
       <el-collapse-item name="5">
         <template #title>
@@ -98,7 +119,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Download, Folder, Brush, Link, QuestionFilled } from '@element-plus/icons-vue'
+import { Download, Folder, Brush, Link, QuestionFilled, InfoFilled } from '@element-plus/icons-vue'
 
 const activeNames = ref(['1'])
 
