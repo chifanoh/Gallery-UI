@@ -52,7 +52,3 @@ npm run electron:dev
 # 打包
 npm run dist
 ```
-
-## 许可证
-
-MIT
