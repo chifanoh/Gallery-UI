@@ -1,81 +1,71 @@
 <template>
-  <div class="home-container">
-    <div class="content-wrapper">
-      <h1 class="title">Gallery-UI</h1>
-      
-      <div class="input-section">
-        <el-input
-          v-model="url"
-          placeholder="请输入漫画链接..."
-          size="large"
-          class="url-input"
-          clearable
-        >
-          <template #prefix>
-            <el-icon><Link /></el-icon>
-          </template>
-        </el-input>
+  <div class="home-wrapper">
+    <div class="home-container">
+      <div class="content-wrapper">
+        <h1 class="title">Gallery-UI</h1>
         
-        <el-button
-          type="primary"
-          size="large"
-          class="download-btn"
-          :loading="isDownloading"
-          :disabled="!galleryInstalled"
-          @click="handleDownload"
-        >
-          <el-icon class="btn-icon"><Download /></el-icon>
-          {{ isDownloading ? '下载中...' : '开始下载' }}
-        </el-button>
-      </div>
-      
-      <div v-if="downloadStatus" class="status-section">
-        <el-alert
-          :title="downloadStatus"
-          :type="statusType"
-          :closable="false"
-          show-icon
-        />
-      </div>
-      
-      <div v-if="checked" class="tips-section" :class="{ error: !galleryInstalled }">
-        <el-icon size="14"><WarningFilled v-if="!galleryInstalled" /><InfoFilled v-else /></el-icon>
-        <span>{{ !galleryInstalled ? (galleryError || 'gallery-dl 未找到，请在设置中查看安装说明') : '请合理使用下载功能，避免频繁请求对服务器造成压力' }}</span>
+        <div class="input-section">
+          <el-input
+            v-model="url"
+            placeholder="请输入漫画链接..."
+            size="large"
+            class="url-input"
+            clearable
+          >
+            <template #prefix>
+              <el-icon><Link /></el-icon>
+            </template>
+          </el-input>
+          
+          <el-button
+            type="primary"
+            size="large"
+            class="download-btn"
+            :loading="isDownloading"
+            :disabled="!galleryInstalled"
+            @click="handleDownload"
+          >
+            <el-icon class="btn-icon"><Download /></el-icon>
+            {{ isDownloading ? '下载中...' : '开始下载' }}
+          </el-button>
+        </div>
+        
+        <div v-if="downloadStatus" class="status-section">
+          <el-alert
+            :title="downloadStatus"
+            :type="statusType"
+            :closable="false"
+            show-icon
+          />
+        </div>
+        
+        <div v-if="checked" class="tips-section" :class="{ error: !galleryInstalled }">
+          <el-icon size="14"><WarningFilled v-if="!galleryInstalled" /><InfoFilled v-else /></el-icon>
+          <span>{{ !galleryInstalled ? (galleryError || 'gallery-dl 未找到，请在设置中查看安装说明') : '请合理使用下载功能，避免频繁请求对服务器造成压力' }}</span>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { Link, Download, InfoFilled, WarningFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useSettingsStore } from '../stores/settings'
+import { storeToRefs } from 'pinia'
 
 const url = ref('')
 const isDownloading = ref(false)
 const downloadStatus = ref('')
 const statusType = ref<'success' | 'warning' | 'info' | 'error'>('info')
-const galleryInstalled = ref(false)
 const galleryError = ref('')
-const checked = ref(false)
 
 const settingsStore = useSettingsStore()
+const { galleryInstalled, galleryChecked } = storeToRefs(settingsStore)
 
-// 检查 gallery-dl 是否安装
-const checkGallery = async () => {
-  try {
-    const result = await window.electronAPI.checkGalleryDl()
-    galleryInstalled.value = result.installed
-    if (result.error) {
-      galleryError.value = result.error
-    }
-    checked.value = true
-  } catch (error) {
-    galleryInstalled.value = false
-    checked.value = true
-  }
-}
+// 计算属性：是否已完成检查
+const checked = computed(() => galleryChecked.value)
 
 const handleDownload = async () => {
   if (!url.value.trim()) {
@@ -116,17 +106,27 @@ const handleDownload = async () => {
 }
 
 onMounted(() => {
-  checkGallery()
+  // 如果还没有检查过，则检查 gallery-dl
+  if (!galleryChecked.value) {
+    settingsStore.checkGallery()
+  }
 })
 </script>
 
 <style scoped>
+.home-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .home-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100%;
+  flex: 1;
   padding: 40px;
+  overflow: auto;
 }
 
 .content-wrapper {

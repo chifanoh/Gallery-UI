@@ -1,0 +1,22 @@
+appId: com.ikan.downloader
+productName: Gallery-UI
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - src/background.cjs
+  - src/preload.cjs
+extraResources:
+  - from: bin/gallery-dl.exe
+    to: gallery-dl.exe
+win:
+  target:
+    - target: portable
+      arch:
+        - x64
+  signAndEditExecutable: false
+portable:
+  artifactName: ${productName}-${version}-portable.exe
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/

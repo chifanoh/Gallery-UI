@@ -3,17 +3,16 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "dist-electron/main.js",
+  "main": "src/background.cjs",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "electron:build-main": "node scripts/build-electron.js",
-    "electron:dev": "npm run build && npm run electron:build-main && electron .",
-    "electron:serve": "npm run build && npm run electron:build-main && electron .",
-    "electron:build": "npm run build && npm run electron:build-main && electron-builder",
+    "electron:dev": "npm run build && electron .",
+    "electron:serve": "npm run build && electron .",
+    "electron:build": "npm run build && electron-builder",
     "dist": "npm run electron:build"
   },
   "dependencies": {
@@ -31,7 +30,6 @@
     "@vue/tsconfig": "^0.9.1",
     "electron": "^34.5.8",
     "electron-builder": "^26.8.1",
-    "esbuild": "^0.25.3",
     "npm-run-all2": "^8.0.4",
     "tailwindcss": "^4.1.4",
     "typescript": "~6.0.0",
@@ -41,51 +39,5 @@
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
-  },
-  "build": {
-    "appId": "com.ikan.downloader",
-    "productName": "iKan Downloader",
-    "directories": {
-      "output": "release",
-      "buildResources": "build"
-    },
-    "files": [
-      "dist/**/*",
-      "dist-electron/**/*",
-      {
-        "from": "bin",
-        "to": "bin",
-        "filter": ["**/*"]
-      }
-    ],
-    "extraResources": [
-      {
-        "from": "bin/gallery-dl.exe",
-        "to": "gallery-dl.exe"
-      }
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        },
-        {
-          "target": "portable",
-          "arch": ["x64"]
-        }
-      ],
-      "icon": "build/icon.ico"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "iKan Downloader"
-    },
-    "portable": {
-      "artifactName": "${productName}-${version}-portable.exe"
-    }
   }
 }

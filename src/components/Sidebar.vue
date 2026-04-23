@@ -6,7 +6,7 @@
     </div>
     
     <nav class="nav-menu">
-      <el-tooltip content="下载漫画" placement="right">
+      <el-tooltip content="下载" placement="right">
         <router-link to="/" class="nav-item" :class="{ active: $route.path === '/' }">
           <el-icon size="22"><Download /></el-icon>
         </router-link>
@@ -20,7 +20,7 @@
         </router-link>
       </el-tooltip>
       
-      <el-tooltip content="使用手册" placement="right">
+      <el-tooltip content="手册" placement="right">
         <router-link to="/manual" class="nav-item" :class="{ active: $route.path === '/manual' }">
           <el-icon size="22"><Document /></el-icon>
         </router-link>

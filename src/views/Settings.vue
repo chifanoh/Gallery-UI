@@ -2,7 +2,7 @@
   <div class="settings-container">
     <h1 class="page-title">设置</h1>
     
-    <div class="settings-card">
+    <section class="settings-section">
       <h2 class="section-title">下载设置</h2>
       
       <div class="setting-item">
@@ -25,9 +25,9 @@
           </el-input>
         </div>
       </div>
-      
-      <el-divider />
-      
+    </section>
+    
+    <section class="settings-section">
       <h2 class="section-title">外观设置</h2>
       
       <div class="setting-item">
@@ -52,24 +52,28 @@
           </el-radio-group>
         </div>
       </div>
-    </div>
+    </section>
     
-    <div class="settings-card">
+    <section class="settings-section">
       <h2 class="section-title">依赖检查</h2>
-      <div class="about-content">
-        <div class="about-item">
-          <span class="about-label">gallery-dl.exe</span>
-          <el-tag v-if="galleryInstalled" type="success">已安装</el-tag>
-          <el-tag v-else type="danger">未安装</el-tag>
+      <div class="check-content">
+        <div class="check-item">
+          <span class="check-label">gallery-dl.exe</span>
+          <div class="tag-wrapper">
+            <el-tag v-if="galleryChecked" :type="galleryInstalled ? 'success' : 'danger'">
+              {{ galleryInstalled ? '已安装' : '未安装' }}
+            </el-tag>
+            <el-tag v-else type="info">检查中...</el-tag>
+          </div>
         </div>
-        <div v-if="galleryVersion" class="about-item">
-          <span class="about-label">版本</span>
-          <span class="about-value">{{ galleryVersion }}</span>
+        <div v-if="galleryVersion" class="check-item">
+          <span class="check-label">版本</span>
+          <span class="check-value">{{ galleryVersion }}</span>
         </div>
         <div v-if="galleryInstalled && galleryBundled" class="install-hint">
           <p>使用内置的 gallery-dl 可执行文件</p>
         </div>
-        <div v-if="!galleryInstalled" class="install-hint">
+        <div v-if="galleryChecked && !galleryInstalled" class="install-hint">
           <p>gallery-dl 未找到，请下载 Windows 可执行文件并放置到以下位置之一：</p>
           <ul>
             <li>应用目录的 bin 文件夹中</li>
@@ -78,21 +82,21 @@
           <p>下载地址：<a href="https://github.com/mikf/gallery-dl/releases" target="_blank">GitHub Releases</a></p>
         </div>
       </div>
-    </div>
+    </section>
     
-    <div class="settings-card">
+    <section class="settings-section">
       <h2 class="section-title">关于</h2>
-      <div class="about-content">
-        <div class="about-item">
-          <span class="about-label">版本</span>
-          <span class="about-value">v1.0.0</span>
+      <div class="check-content">
+        <div class="check-item">
+          <span class="check-label">版本</span>
+          <span class="check-value">v1.0.0</span>
         </div>
-        <div class="about-item">
-          <span class="about-label">基于</span>
-          <span class="about-value">Electron + Vue3 + gallery-dl</span>
+        <div class="check-item">
+          <span class="check-label">基于</span>
+          <span class="check-value">Electron + Vue3 + gallery-dl</span>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -106,13 +110,10 @@ import { ElMessage } from 'element-plus'
 
 const settingsStore = useSettingsStore()
 const themeStore = useThemeStore()
-const { downloadPath } = storeToRefs(settingsStore)
+const { downloadPath, galleryInstalled, galleryVersion, galleryBundled, galleryChecked } = storeToRefs(settingsStore)
 const { isDark } = storeToRefs(themeStore)
 
 const themeMode = ref('light')
-const galleryInstalled = ref(false)
-const galleryVersion = ref('')
-const galleryBundled = ref(false)
 
 onMounted(async () => {
   // 根据当前主题设置初始值
@@ -122,16 +123,9 @@ onMounted(async () => {
     themeMode.value = 'light'
   }
   
-  // 检查 gallery-dl
-  try {
-    const result = await window.electronAPI.checkGalleryDl()
-    galleryInstalled.value = result.installed
-    galleryBundled.value = result.bundled || false
-    if (result.version) {
-      galleryVersion.value = result.version
-    }
-  } catch (error) {
-    console.error('检查 gallery-dl 失败:', error)
+  // 如果还没有检查过，则检查 gallery-dl
+  if (!galleryChecked.value) {
+    await settingsStore.checkGallery()
   }
 })
 
@@ -164,21 +158,22 @@ const handleThemeChange = (val: string) => {
 .settings-container {
   max-width: 800px;
   margin: 0 auto;
+  padding: 24px 32px;
 }
 
 .page-title {
   font-size: 28px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
-.settings-card {
-  background-color: var(--bg-secondary);
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 20px;
-  border: 1px solid var(--border-color);
+.settings-section {
+  margin-bottom: 40px;
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
 }
 
 .section-title {
@@ -193,6 +188,12 @@ const handleThemeChange = (val: string) => {
   justify-content: space-between;
   align-items: flex-start;
   gap: 40px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
 }
 
 .setting-info {
@@ -210,6 +211,7 @@ const handleThemeChange = (val: string) => {
 .setting-desc {
   font-size: 13px;
   color: var(--text-secondary);
+  margin: 0;
 }
 
 .setting-control {
@@ -217,56 +219,79 @@ const handleThemeChange = (val: string) => {
 }
 
 .path-input :deep(.el-input__wrapper) {
-  background-color: var(--bg-primary);
+  background-color: var(--bg-secondary);
 }
 
 .path-input :deep(.el-input__inner) {
   color: var(--text-primary);
 }
 
-.about-content {
+.check-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
-.about-item {
+.check-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.about-label {
+.check-item:last-child {
+  border-bottom: none;
+}
+
+.check-label {
   color: var(--text-secondary);
   font-size: 14px;
 }
 
-.about-value {
+.tag-wrapper {
+  min-width: 60px;
+  text-align: right;
+}
+
+.check-value {
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
 }
 
 .install-hint {
-  margin-top: 12px;
-  padding: 12px;
-  background-color: var(--bg-primary);
+  margin-top: 16px;
+  padding: 16px;
+  background-color: var(--bg-secondary);
   border-radius: 8px;
   font-size: 13px;
 }
 
 .install-hint p {
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
-.install-hint code {
-  display: block;
-  padding: 8px 12px;
-  background-color: var(--bg-secondary);
-  border-radius: 4px;
-  color: var(--text-primary);
-  font-family: 'Courier New', monospace;
+.install-hint p:last-child {
+  margin-bottom: 0;
+}
+
+.install-hint ul {
+  color: var(--text-secondary);
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.install-hint li {
+  margin: 6px 0;
+}
+
+.install-hint a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.install-hint a:hover {
+  text-decoration: underline;
 }
 </style>

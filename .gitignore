@@ -37,3 +37,24 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Electron
+.electron-cache/
+release/
+dist/
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+*.zip
+*.tar.gz
+
+# Dependencies
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
