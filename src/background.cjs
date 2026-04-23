@@ -123,7 +123,7 @@ ipcMain.handle('download-gallery', async (event, url, downloadPath) => {
     let targetPath = downloadPath
     
     if (targetPath === 'downloads' || targetPath.startsWith('./') || targetPath.startsWith('.\\')) {
-      targetPath = path.join(app.getPath('downloads'), 'iKan Downloads')
+      targetPath = app.getPath('downloads')
     }
 
     if (!fs.existsSync(targetPath)) {
