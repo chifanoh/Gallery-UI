@@ -19,12 +19,22 @@ asarUnpack:
 electronLanguages: ['zh-CN', 'en-US']
 win:
   target:
+    - target: nsis
+      arch:
+        - x64
     - target: portable
       arch:
         - x64
   signAndEditExecutable: false
+nsis:
+  artifactName: ${productName}-v${version}-win-x64-setup.exe
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Gallery-UI
 portable:
-  artifactName: ${productName}-${version}-portable.exe
+  artifactName: ${productName}-v${version}-win-x64.exe
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
 compression: maximum
