@@ -40,15 +40,6 @@
 - Pinia
 - Tailwind CSS
 
-## 开发
-
-```bash
-# 安装依赖
-npm install
-
-# 开发模式
-npm run electron:dev
-
-# 打包
-npm run dist
-```
+---
+> ⚡ **只用 Windows，追求更快的启动速度和更小的体积？**  
+> 试试 WPF 版本 → **[GalleryUI-WPF](https://github.com/chifanoh/GalleryUI-WPF)**
