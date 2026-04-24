@@ -40,6 +40,5 @@
 - Pinia
 - Tailwind CSS
 
----
-> ⚡ **只用 Windows，追求更快的启动速度和更小的体积？**  
-> 试试 WPF 版本 → **[GalleryUI-WPF](https://github.com/chifanoh/GalleryUI-WPF)**
+## ⚡ **只用 Windows，追求更快的启动速度和更小的体积？**  
+- 试试 WPF 版本 → **[GalleryUI-WPF](https://github.com/chifanoh/GalleryUI-WPF)**
